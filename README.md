@@ -25,11 +25,11 @@ stateDiagram-v2
 
 **State Reference**
 
-| State | Description |
-|-------|-------------|
-| `Active` | Timer is running. Device must send heartbeats before timeout. |
+| State    | Description                                                         |
+| -------- | ------------------------------------------------------------------- |
+| `Active` | Timer is running. Device must send heartbeats before timeout.       |
 | `Paused` | Timer is suspended. No alerts will fire. Useful during maintenance. |
-| `Down` | Timer reached zero. A critical alert has been fired. |
+| `Down`   | Timer reached zero. A critical alert has been fired.                |
 
 ---
 
@@ -52,9 +52,9 @@ npm start
 
 ---
 
-## 3. API Documentation
+## 3. API Documentation & Testing
 
-### Create a Monitor
+### A. Register a Monitor
 
 - **Endpoint:** `POST /monitors`
 - **Payload:**
@@ -62,37 +62,58 @@ npm start
 ```json
 {
   "id": "device-123",
-  "timeout": 60,
+  "timeout": 15,
   "alert_email": "admin@critmon.com"
 }
 ```
 
 - **Response:** `201 Created`
+- **PowerShell:**
+
+```powershell
+Invoke-RestMethod -Uri http://localhost:3000/monitors -Method POST -ContentType "application/json" -Body '{"id": "device-123", "timeout": 15, "alert_email": "admin@critmon.com"}'
+```
 
 ---
 
-### Send a Heartbeat (Reset / Unpause)
+### B. Send a Heartbeat (Reset / Unpause)
 
 - **Endpoint:** `POST /monitors/:id/heartbeat`
 - **Description:** Restarts the countdown timer. If the monitor was in a `paused` state, this call automatically transitions it back to `active`.
 - **Response:** `200 OK`
+- **PowerShell:**
+
+```powershell
+Invoke-RestMethod -Uri http://localhost:3000/monitors/device-123/heartbeat -Method POST
+```
 
 ---
 
-### Pause Monitoring (Snooze)
+### C. Pause Monitoring (Snooze)
 
 - **Endpoint:** `POST /monitors/:id/pause`
 - **Description:** Stops the timer completely for the specified device. No alerts will fire until a heartbeat is received.
 - **Response:** `200 OK`
+- **PowerShell:**
+
+```powershell
+Invoke-RestMethod -Uri http://localhost:3000/monitors/device-123/pause -Method POST
+```
 
 ---
 
-### List All Monitors *(Developer's Choice)*
+### D. List All Monitors _(Developer's Choice)_
 
 - **Endpoint:** `GET /monitors`
 - **Description:** Retrieves a list of all registered devices and their current status (`active`, `paused`, or `down`).
 - **Response:** `200 OK`
-- **Example Body:**
+- **PowerShell:**
+
+```powershell
+Invoke-RestMethod -Uri http://localhost:3000/monitors -Method GET
+```
+
+- **Example Response Body:**
 
 ```json
 {
