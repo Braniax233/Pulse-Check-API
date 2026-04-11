@@ -10,5 +10,5 @@ app.use(express.json());
 app.use('/monitors', monitorRoutes);
 
 app.listen(3000, () => {
-  console.log('Watchdog Sentinel is running on port 3000');
+  console.log('Watchdog  Sentinel is running on port 3000');
 });
