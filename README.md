@@ -8,21 +8,46 @@ A Dead Man's Switch API built with Node.js and Express for monitoring critical i
 
 The following diagram illustrates the state transitions of a monitor within the system:
 
+## Sequence Diagram
+
 ```mermaid
-stateDiagram-v2
-    [*] --> Active: POST /monitors (Register)
+sequenceDiagram
+    participant D as Device
+    participant A as API Server
+    participant T as Timer Engine
+    participant AL as Alert System
 
-    Active --> Active: POST /monitors/{id}/heartbeat (Resets Timer)
-    Active --> Paused: POST /monitors/{id}/pause (Stops Timer)
-    Active --> Down: Timer Reaches 0 (Fires Alert)
+    Note over D,AL: 1 · Register monitor
+    D->>A: POST /monitors
+    A->>T: Start countdown timer
+    A-->>D: 201 Created
 
-    Paused --> Active: POST /monitors/{id}/heartbeat (Implicit Unpause)
+    Note over D,AL: 2 · Send heartbeat
+    D->>A: POST /{id}/heartbeat
+    A->>T: Reset countdown timer
+    A-->>D: 200 OK
 
-    Down --> Active: POST /monitors/{id}/heartbeat (Device Recovered)
+    Note over D,AL: 3 · Pause monitoring
+    D->>A: POST /{id}/pause
+    A->>T: Suspend countdown timer
+    A-->>D: 200 OK
 
-    [*] --> ViewState: GET /monitors (List All)
+    Note over D,AL: 4 · Timer expires — alert fires automatically
+    T->>T: Timer reaches zero
+    T->>AL: Fire alert notification
+    AL->>AL: Log JSON to stdout
+    T-->>A: Status → Down
+
+    Note over D,AL: 5 · Device recovered
+    D->>A: POST /{id}/heartbeat
+    A->>T: Restart countdown timer
+    T-->>A: Status → Active
+    A-->>D: 200 OK
+
+    Note over D,AL: 6 · List all monitors
+    D->>A: GET /monitors
+    A-->>D: 200 + monitors array
 ```
-
 **State Reference**
 
 | State    | Description                                                         |
